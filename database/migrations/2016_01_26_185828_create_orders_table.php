@@ -13,12 +13,16 @@ class CreateOrdersTable extends Migration
     public function up()
     {
         // tabla para guardar las ventas
+        /*
+         * SOLO SE PODRA BORRAR SI NO HA PAGADO.
+         *
+         */
         Schema::create('orders', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
-            $table->enum('status', ['carrito','pendientebanco','pago','cancelado', 'enviado' ,'devuelto', 'recibido']);
+            $table->enum('status', ['carrito','pendienteBanco','pago','cancelado', 'enviado' ,'devuelto', 'recibido']);
+            $table->boolean('shipping');                                  //booleano para saber si es envio o tienda
             $table->foreign('user_id')->references('id')->on('users');
-            $table->boolean('shipping');
             $table->softDeletes();
             $table->timestamps();
         });
@@ -33,13 +37,29 @@ class CreateOrdersTable extends Migration
         Schema::create('order_invoices', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('order_id')->unsigned();
-            $table->string('name');
-            $table->string('telephone');
-            $table->char('Series');                  //serie de la factura de emision
-            $table->integer('Number')->unsigned();   //numero de la factura de emision
+            $table->integer('user_id')->unsigned();  // Usuario que compro
+            $table->string('fullName'); // Nombre de la empresa o profesional
+            // (CIF en el caso de las empresas o personas jurídicas y NIF si el que está facturando es un profesional autónomo o persona física.
+            $table->enum('taxIdentificationType', ['NIF', 'CIF']);
+            $table->string('taxIdentification'); //CIF o NIF
+            $table->string('postalAddress'); // Dirección postal
+            $table->enum('series', ['P','F','R']);
+            // P ->factura proforma          - solo se generara si el cliente decide pagar en el banco -
+            // F ->factura                   - se genera cuando se confirma el pago del cliente por cualquier medio.
+            // R ->factura rectificativa     - se genera con rectificativas o devoluciones
+            $table->integer('number')->unsigned();   //numero de la factura de emision
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users');
             $table->softDeletes();
             $table->timestamps();
+            /* Datos que debe incluir la factura */
+            /*
+                Modo de pago
+                Cuenta bancaria a la que hacer el ingreso del pago, si procede.
+                Registro mercantil de la sociedad
+                Teléfonos de contacto o correos
+                Garantía o días en los que es posible realizar la devolución
+             */
         });
 
         // tabla para datos de la entreda
@@ -47,11 +67,12 @@ class CreateOrdersTable extends Migration
             $table->increments('id');
             $table->integer('order_id')->unsigned();
             $table->enum('island', ['tenerife','grancanaría','lapalma', 'fuerteventura', 'lagomera' ,'lanzarote','elhierro']);
+
             $table->string('address');
             $table->integer('postCode')->unsigned();
-            $table->string('moreInfo');
-            $table->string('name');
+            $table->string('fullName');
             $table->string('telephone');
+            $table->string('moreInfo');
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
             $table->softDeletes();
             $table->timestamps();
@@ -117,3 +138,4 @@ class CreateOrdersTable extends Migration
         Schema::drop('orders');
     }
 }
+

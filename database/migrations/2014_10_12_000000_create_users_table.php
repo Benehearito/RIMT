@@ -12,6 +12,7 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
+        //tabla para guardar los usuarios
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('email')->unique();
@@ -24,6 +25,7 @@ class CreateUsersTable extends Migration
             $table->boolean('banned');
             $table->string('registration_token')->nullable();
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
