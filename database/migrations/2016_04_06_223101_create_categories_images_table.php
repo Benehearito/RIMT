@@ -3,16 +3,11 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateImagesCategoriesTable extends Migration
+class CreateCategoriesImagesTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
-        Schema::create('images_categories', function (Blueprint $table) {
+        Schema::create('categories_images', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('order');
             $table->integer('categories_id')->unsigned();
@@ -30,6 +25,6 @@ class CreateImagesCategoriesTable extends Migration
      */
     public function down()
     {
-        Schema::drop('images_categories');
+        Schema::drop('categories_images');
     }
 }
